@@ -1,0 +1,21 @@
+{
+  "market": {
+    "platform": "console",
+    "coins": 100000,
+    "min_profit": 500,
+    "min_roi": 2.0
+  },
+
+  "live_filters": {
+    "budget_mode": "auto",
+    "max_active_filters": 10,
+    "refresh_seconds": 60
+  },
+
+  "search": {
+    "interval_seconds": 2.0,
+    "pauses_enabled": true,
+    "pause_after_searches": 20,
+    "pause_seconds": 30
+  }
+}
