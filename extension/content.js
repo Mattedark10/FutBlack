@@ -1,289 +1,149 @@
 (() => {
     "use strict";
 
-    // Prevent FutBlack from loading twice.
-    if (window.__FUTBLACK_LOADED__) {
-        return;
-    }
+    if (window.__FUTBLACK_V3__) return;
+    window.__FUTBLACK_V3__ = true;
 
-    window.__FUTBLACK_LOADED__ = true;
+    console.log("[FutBlack] Starting V3");
 
-    const FutBlack = {
-        active: false,
-        page: null,
-        navButton: null,
-        navigation: null,
-
+    const state = {
+        open: false,
         settings: {
-            minimumProfit: 500,
+            minProfit: 500,
             searchInterval: 2.0,
-
             pausesEnabled: true,
             pauseEvery: 20,
             pauseDuration: 30
-        },
-
-        market: {
-            lowestBin: null,
-            maxBuy: null,
-            sellPrice: null,
-            profit: null,
-            lastCheck: null
         }
     };
 
+    // =========================================================
+    // CREATE FUTBLACK BUTTON
+    // =========================================================
 
-    // ============================================================
-    // UTILITIES
-    // ============================================================
-
-    function formatCoins(value) {
-        if (
-            value === null ||
-            value === undefined ||
-            Number.isNaN(value)
-        ) {
-            return "---";
-        }
-
-        return Math.floor(value).toLocaleString("en-US");
-    }
-
-
-    function setStatus(message) {
-        const status = document.getElementById(
-            "fb-market-status"
-        );
-
-        if (status) {
-            status.textContent = message;
-        }
-    }
-
-
-    // ============================================================
-    // FIND EA BOTTOM NAVIGATION
-    // ============================================================
-
-    function findBottomNavigation() {
-
-        const elements = [
-            ...document.querySelectorAll("nav"),
-            ...document.querySelectorAll(
-                '[class*="nav"], [class*="Nav"]'
-            )
-        ];
-
-        let bestElement = null;
-        let bestScore = 0;
-
-        for (const element of elements) {
-
-            const text = (
-                element.innerText || ""
-            ).toLowerCase();
-
-            let score = 0;
-
-            if (text.includes("home")) {
-                score += 2;
-            }
-
-            if (text.includes("squad")) {
-                score += 2;
-            }
-
-            if (text.includes("transfer")) {
-                score += 2;
-            }
-
-            if (text.includes("store")) {
-                score += 2;
-            }
-
-            if (text.includes("club")) {
-                score += 2;
-            }
-
-
-            const rect =
-                element.getBoundingClientRect();
-
-            // Prefer navigation near bottom.
-            if (
-                rect.bottom >
-                window.innerHeight * 0.80
-            ) {
-                score += 3;
-            }
-
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestElement = element;
-            }
-        }
-
-
-        if (bestScore >= 7) {
-            return bestElement;
-        }
-
-        return null;
-    }
-
-
-    // ============================================================
-    // CREATE FUTBLACK NAVIGATION BUTTON
-    // ============================================================
-
-    function createNavigationButton(nav) {
-
-        if (
-            document.getElementById(
-                "futblack-nav-button"
-            )
-        ) {
+    function createButton() {
+        if (document.getElementById("fb-launcher")) {
             return;
         }
 
+        const button = document.createElement("button");
 
-        const button =
-            document.createElement("button");
-
-        button.id =
-            "futblack-nav-button";
-
+        button.id = "fb-launcher";
         button.type = "button";
 
-        button.setAttribute(
-            "aria-label",
-            "FutBlack"
-        );
-
-
-        // IMPORTANT:
-        // We create our own button.
-        // We do NOT clone Store or Club.
         button.innerHTML = `
-            <div class="fb-nav-icon">
-                FB
-            </div>
-
-            <div class="fb-nav-text">
-                FutBlack
-            </div>
+            <div class="fb-launcher-icon">FB</div>
+            <div class="fb-launcher-text">FutBlack</div>
         `;
 
-
+        /*
+         * pointerdown is useful on mobile/touch environments.
+         */
         button.addEventListener(
-            "click",
-            event => {
-
+            "pointerdown",
+            function (event) {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
 
-                openFutBlack();
+                console.log(
+                    "[FutBlack] Pointer received"
+                );
 
+                openFutBlack();
             },
             true
         );
 
+        button.addEventListener(
+            "click",
+            function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
 
-        nav.appendChild(button);
+                console.log(
+                    "[FutBlack] Click received"
+                );
 
+                openFutBlack();
+            },
+            true
+        );
 
-        FutBlack.navButton = button;
-        FutBlack.navigation = nav;
+        document.documentElement.appendChild(button);
 
-
-        watchEANavigation(nav);
+        console.log(
+            "[FutBlack] Launcher created"
+        );
     }
 
-
-    // ============================================================
-    // CREATE FUTBLACK PAGE
-    // ============================================================
+    // =========================================================
+    // CREATE PAGE
+    // =========================================================
 
     function createPage() {
-
-        if (FutBlack.page) {
-            return FutBlack.page;
+        if (document.getElementById("fb-page")) {
+            return;
         }
 
+        const page = document.createElement("div");
 
-        const page =
-            document.createElement("div");
-
-        page.id = "futblack-page";
-
+        page.id = "fb-page";
 
         page.innerHTML = `
-
-            <header class="fb-header">
+            <div class="fb-header">
 
                 <div>
-
-                    <div class="fb-brand">
+                    <div class="fb-logo">
                         FUTBLACK
                     </div>
 
                     <div class="fb-subtitle">
                         FC 27 MARKET ASSISTANT
                     </div>
-
                 </div>
 
-
-                <div class="fb-ready">
-
-                    <span class="fb-ready-dot"></span>
-
+                <div class="fb-status">
+                    <span></span>
                     READY
-
                 </div>
 
-            </header>
+            </div>
 
 
-            <nav class="fb-tabs">
+            <div class="fb-tabs">
 
                 <button
                     class="fb-tab active"
-                    data-fb-tab="live"
+                    data-tab="live"
                 >
                     LIVE FILTERS
                 </button>
 
-
                 <button
                     class="fb-tab"
-                    data-fb-tab="market"
+                    data-tab="market"
                 >
                     MARKET
                 </button>
 
-
                 <button
                     class="fb-tab"
-                    data-fb-tab="settings"
+                    data-tab="settings"
                 >
                     SETTINGS
                 </button>
 
-            </nav>
+            </div>
 
 
-            <main class="fb-content">
+            <div class="fb-body">
 
-
-                <!-- ========================================= -->
-                <!-- LIVE FILTERS                              -->
-                <!-- ========================================= -->
+                <!-- LIVE FILTERS -->
 
                 <section
-                    id="fb-page-live"
+                    id="fb-live"
                     class="fb-section active"
                 >
 
@@ -291,43 +151,30 @@
                         ACTIVE FILTER
                     </div>
 
-
                     <div class="fb-card">
-
 
                         <div class="fb-filter-header">
 
                             <div>
-
-                                <div class="fb-muted">
+                                <span class="fb-small">
                                     CURRENT FILTER
-                                </div>
+                                </span>
 
-                                <div
-                                    id="fb-filter-name"
-                                    class="fb-filter-name"
-                                >
+                                <strong>
                                     Searching...
-                                </div>
-
+                                </strong>
                             </div>
 
-
-                            <div
-                                id="fb-filter-score"
-                                class="fb-score"
-                            >
+                            <div class="fb-score">
                                 --
                             </div>
 
                         </div>
 
 
-                        <div class="fb-price-grid">
+                        <div class="fb-grid">
 
-
-                            <div class="fb-price-item">
-
+                            <div class="fb-price">
                                 <span>
                                     LOWEST BIN
                                 </span>
@@ -337,12 +184,10 @@
                                 >
                                     ---
                                 </strong>
-
                             </div>
 
 
-                            <div class="fb-price-item">
-
+                            <div class="fb-price">
                                 <span>
                                     MAX BUY
                                 </span>
@@ -352,27 +197,23 @@
                                 >
                                     ---
                                 </strong>
-
                             </div>
 
 
-                            <div class="fb-price-item">
-
+                            <div class="fb-price">
                                 <span>
                                     SELL
                                 </span>
 
                                 <strong
-                                    id="fb-sell-price"
+                                    id="fb-sell"
                                 >
                                     ---
                                 </strong>
-
                             </div>
 
 
-                            <div class="fb-price-item">
-
+                            <div class="fb-price">
                                 <span>
                                     PROFIT
                                 </span>
@@ -382,80 +223,55 @@
                                 >
                                     ---
                                 </strong>
-
                             </div>
-
 
                         </div>
 
 
-                        <div class="fb-market-state">
+                        <div class="fb-auto">
 
-                            <div class="fb-loading-dot"></div>
+                            <div class="fb-pulse"></div>
 
                             <div>
-
                                 <strong>
                                     Automatic Market Check
                                 </strong>
 
-                                <span
-                                    id="fb-market-status"
-                                >
+                                <span>
                                     Waiting for market data...
                                 </span>
-
                             </div>
 
                         </div>
 
-
                     </div>
 
 
-                    <div class="fb-card fb-secondary-card">
+                    <div class="fb-card fb-info-card">
 
-                        <div class="fb-row">
-
-                            <span>
-                                Search interval
-                            </span>
-
-                            <strong
-                                id="fb-live-speed"
-                            >
-                                2.0s
+                        <div>
+                            <span>Search interval</span>
+                            <strong id="fb-info-speed">
+                                2.0 s
                             </strong>
-
                         </div>
 
-
-                        <div class="fb-row">
-
-                            <span>
-                                Pauses
-                            </span>
-
-                            <strong
-                                id="fb-live-pauses"
-                            >
+                        <div>
+                            <span>Pauses</span>
+                            <strong id="fb-info-pauses">
                                 ON
                             </strong>
-
                         </div>
 
                     </div>
-
 
                 </section>
 
 
-                <!-- ========================================= -->
-                <!-- MARKET                                    -->
-                <!-- ========================================= -->
+                <!-- MARKET -->
 
                 <section
-                    id="fb-page-market"
+                    id="fb-market"
                     class="fb-section"
                 >
 
@@ -463,139 +279,113 @@
                         MARKET MONITOR
                     </div>
 
-
                     <div class="fb-card">
 
-
-                        <div class="fb-muted">
+                        <span class="fb-small">
                             CURRENT LOWEST BIN
-                        </div>
+                        </span>
 
-
-                        <div class="fb-large-price">
-
-                            <span
-                                id="fb-market-price"
-                            >
+                        <div class="fb-market-price">
+                            <strong>
                                 ---
-                            </span>
+                            </strong>
 
-                            <small>
+                            <span>
                                 coins
-                            </small>
-
+                            </span>
                         </div>
 
 
-                        <div class="fb-market-state">
+                        <div class="fb-auto">
 
-                            <div class="fb-loading-dot"></div>
+                            <div class="fb-pulse"></div>
 
                             <div>
-
                                 <strong>
                                     Auto Price Check
                                 </strong>
 
                                 <span>
-                                    FutBlack checks the
-                                    current market automatically.
+                                    Market reader will run
+                                    automatically.
                                 </span>
-
                             </div>
 
                         </div>
-
 
                     </div>
 
                 </section>
 
 
-                <!-- ========================================= -->
-                <!-- SETTINGS                                  -->
-                <!-- ========================================= -->
+                <!-- SETTINGS -->
 
                 <section
-                    id="fb-page-settings"
+                    id="fb-settings"
                     class="fb-section"
                 >
 
                     <div class="fb-section-title">
-                        TRADING SETTINGS
+                        SETTINGS
                     </div>
-
 
                     <div class="fb-card">
 
-
-                        <label class="fb-label">
-                            Minimum Profit
+                        <label>
+                            Minimum profit
                         </label>
 
-
-                        <div class="fb-input-container">
-
+                        <div class="fb-input-row">
                             <input
                                 id="fb-min-profit"
                                 type="number"
+                                value="500"
                                 min="0"
                                 step="50"
-                                value="500"
                             >
 
-                            <span>
-                                coins
-                            </span>
-
+                            <span>coins</span>
                         </div>
 
 
-                        <label class="fb-label">
-                            Search Interval
+                        <label>
+                            Search interval
                         </label>
 
-
-                        <div class="fb-input-container">
-
+                        <div class="fb-input-row">
                             <input
-                                id="fb-search-speed"
+                                id="fb-search-interval"
                                 type="number"
+                                value="2.0"
                                 min="0.5"
                                 step="0.1"
-                                value="2.0"
                             >
 
-                            <span>
-                                seconds
-                            </span>
-
+                            <span>seconds</span>
                         </div>
 
 
-                        <div class="fb-setting-divider"></div>
+                        <div class="fb-divider"></div>
 
 
                         <div class="fb-toggle-row">
 
-
                             <div>
-
                                 <strong>
                                     Use pauses
                                 </strong>
 
                                 <small>
-                                    Pause searches periodically
+                                    Enable or disable
+                                    scheduled pauses
                                 </small>
-
                             </div>
 
 
                             <label class="fb-switch">
 
                                 <input
-                                    id="fb-use-pauses"
+                                    id="fb-pauses-enabled"
                                     type="checkbox"
                                     checked
                                 >
@@ -604,25 +394,22 @@
 
                             </label>
 
-
                         </div>
 
 
-                        <div id="fb-pause-settings">
+                        <div id="fb-pause-options">
 
-
-                            <label class="fb-label">
+                            <label>
                                 Pause every
                             </label>
 
-
-                            <div class="fb-input-container">
+                            <div class="fb-input-row">
 
                                 <input
                                     id="fb-pause-every"
                                     type="number"
-                                    min="1"
                                     value="20"
+                                    min="1"
                                 >
 
                                 <span>
@@ -632,18 +419,17 @@
                             </div>
 
 
-                            <label class="fb-label">
+                            <label>
                                 Pause duration
                             </label>
 
-
-                            <div class="fb-input-container">
+                            <div class="fb-input-row">
 
                                 <input
                                     id="fb-pause-duration"
                                     type="number"
-                                    min="1"
                                     value="30"
+                                    min="1"
                                 >
 
                                 <span>
@@ -652,73 +438,147 @@
 
                             </div>
 
-
                         </div>
-
 
                     </div>
 
                 </section>
 
-
-            </main>
+            </div>
         `;
 
+        document.documentElement.appendChild(page);
 
-        document.body.appendChild(page);
+        setupEvents();
 
-
-        FutBlack.page = page;
-
-
-        setupPageEvents();
-
-
-        return page;
+        console.log(
+            "[FutBlack] Page created"
+        );
     }
 
+    // =========================================================
+    // OPEN
+    // =========================================================
 
-    // ============================================================
-    // PAGE EVENTS
-    // ============================================================
+    function openFutBlack() {
+        createPage();
 
-    function setupPageEvents() {
+        const page =
+            document.getElementById("fb-page");
 
-        const tabs =
-            document.querySelectorAll(
-                ".fb-tab"
+        const launcher =
+            document.getElementById("fb-launcher");
+
+        if (!page) {
+            console.error(
+                "[FutBlack] Page not found"
             );
 
+            return;
+        }
 
-        tabs.forEach(tab => {
+        state.open = true;
 
-            tab.addEventListener(
-                "click",
-                event => {
+        page.classList.add("open");
 
-                    event.preventDefault();
+        if (launcher) {
+            launcher.classList.add("selected");
+        }
 
-                    const target =
-                        tab.dataset.fbTab;
+        console.log(
+            "[FutBlack] OPEN"
+        );
+    }
 
-                    switchTab(target);
+    // =========================================================
+    // CLOSE
+    // =========================================================
+
+    function closeFutBlack() {
+        const page =
+            document.getElementById("fb-page");
+
+        const launcher =
+            document.getElementById("fb-launcher");
+
+        state.open = false;
+
+        if (page) {
+            page.classList.remove("open");
+        }
+
+        if (launcher) {
+            launcher.classList.remove("selected");
+        }
+
+        console.log(
+            "[FutBlack] CLOSED"
+        );
+    }
+
+    // =========================================================
+    // EVENTS
+    // =========================================================
+
+    function setupEvents() {
+        document
+            .querySelectorAll(".fb-tab")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const target =
+                            button.dataset.tab;
+
+                        switchTab(target);
+                    }
+                );
+
+            });
+
+
+        // Search interval
+
+        document
+            .getElementById(
+                "fb-search-interval"
+            )
+            .addEventListener(
+                "input",
+                function (event) {
+
+                    const value =
+                        Number(
+                            event.target.value
+                        );
+
+                    if (!Number.isNaN(value)) {
+                        state.settings.searchInterval =
+                            value;
+
+                        document.getElementById(
+                            "fb-info-speed"
+                        ).textContent =
+                            `${value.toFixed(1)} s`;
+                    }
 
                 }
             );
 
-        });
-
 
         // Minimum profit
+
         document
             .getElementById(
                 "fb-min-profit"
             )
             .addEventListener(
                 "input",
-                event => {
+                function (event) {
 
-                    FutBlack.settings.minimumProfit =
+                    state.settings.minProfit =
                         Number(
                             event.target.value
                         ) || 0;
@@ -727,61 +587,31 @@
             );
 
 
-        // Search speed
+        // Pause toggle
+
         document
             .getElementById(
-                "fb-search-speed"
-            )
-            .addEventListener(
-                "input",
-                event => {
-
-                    const value =
-                        Number(
-                            event.target.value
-                        ) || 2;
-
-
-                    FutBlack.settings.searchInterval =
-                        value;
-
-
-                    document.getElementById(
-                        "fb-live-speed"
-                    ).textContent =
-                        `${value.toFixed(1)}s`;
-
-                }
-            );
-
-
-        // Pauses ON/OFF
-        document
-            .getElementById(
-                "fb-use-pauses"
+                "fb-pauses-enabled"
             )
             .addEventListener(
                 "change",
-                event => {
+                function (event) {
 
                     const enabled =
                         event.target.checked;
 
-
-                    FutBlack.settings.pausesEnabled =
+                    state.settings.pausesEnabled =
                         enabled;
 
-
                     document.getElementById(
-                        "fb-pause-settings"
+                        "fb-pause-options"
                     ).style.display =
                         enabled
                             ? "block"
                             : "none";
 
-
                     document.getElementById(
-                        "fb-live-pauses"
+                        "fb-info-pauses"
                     ).textContent =
                         enabled
                             ? "ON"
@@ -791,16 +621,15 @@
             );
 
 
-        // Pause every
         document
             .getElementById(
                 "fb-pause-every"
             )
             .addEventListener(
                 "input",
-                event => {
+                function (event) {
 
-                    FutBlack.settings.pauseEvery =
+                    state.settings.pauseEvery =
                         Number(
                             event.target.value
                         ) || 20;
@@ -809,16 +638,15 @@
             );
 
 
-        // Pause duration
         document
             .getElementById(
                 "fb-pause-duration"
             )
             .addEventListener(
                 "input",
-                event => {
+                function (event) {
 
-                    FutBlack.settings.pauseDuration =
+                    state.settings.pauseDuration =
                         Number(
                             event.target.value
                         ) || 30;
@@ -827,20 +655,18 @@
             );
     }
 
+    // =========================================================
+    // TABS
+    // =========================================================
 
-    // ============================================================
-    // TAB SWITCHING
-    // ============================================================
-
-    function switchTab(name) {
-
+    function switchTab(target) {
         document
             .querySelectorAll(".fb-tab")
-            .forEach(tab => {
+            .forEach(button => {
 
-                tab.classList.toggle(
+                button.classList.toggle(
                     "active",
-                    tab.dataset.fbTab === name
+                    button.dataset.tab === target
                 );
 
             });
@@ -857,288 +683,108 @@
             });
 
 
-        const target =
+        const page =
             document.getElementById(
-                `fb-page-${name}`
+                `fb-${target}`
             );
 
-
-        if (target) {
-            target.classList.add(
-                "active"
-            );
+        if (page) {
+            page.classList.add("active");
         }
     }
 
+    // =========================================================
+    // CLOSE WHEN EA NAVIGATION IS USED
+    // =========================================================
 
-    // ============================================================
-    // OPEN FUTBLACK
-    // ============================================================
+    document.addEventListener(
+        "pointerdown",
+        function (event) {
 
-    function openFutBlack() {
+            if (!state.open) return;
 
-        createPage();
+            if (
+                event.target.closest("#fb-page") ||
+                event.target.closest("#fb-launcher")
+            ) {
+                return;
+            }
 
+            /*
+             * If the user touches the underlying EA
+             * navigation, close FutBlack and allow
+             * EA to handle the navigation normally.
+             */
+            const y = event.clientY;
 
-        FutBlack.active = true;
-
-
-        FutBlack.page.classList.add(
-            "active"
-        );
-
-
-        if (FutBlack.navButton) {
-            FutBlack.navButton.classList.add(
-                "fb-selected"
-            );
-        }
-    }
-
-
-    // ============================================================
-    // CLOSE FUTBLACK
-    // ============================================================
-
-    function closeFutBlack() {
-
-        if (!FutBlack.active) {
-            return;
-        }
-
-
-        FutBlack.active = false;
-
-
-        if (FutBlack.page) {
-            FutBlack.page.classList.remove(
-                "active"
-            );
-        }
-
-
-        if (FutBlack.navButton) {
-            FutBlack.navButton.classList.remove(
-                "fb-selected"
-            );
-        }
-    }
-
-
-    // ============================================================
-    // WATCH EA NAVIGATION
-    // ============================================================
-
-    function watchEANavigation(nav) {
-
-        nav.addEventListener(
-            "click",
-            event => {
-
-                const futBlackButton =
-                    event.target.closest(
-                        "#futblack-nav-button"
-                    );
-
-
-                if (futBlackButton) {
-                    return;
-                }
-
-
+            if (
+                y >
+                window.innerHeight - 80
+            ) {
                 closeFutBlack();
+            }
 
-            },
-            false
-        );
-    }
+        },
+        true
+    );
 
+    // =========================================================
+    // FUTURE MARKET READER
+    // =========================================================
 
-    // ============================================================
-    // FUTURE MARKET DATA API
-    // ============================================================
-
-    function updateMarketData(data) {
-
-        if (!data) {
-            return;
-        }
-
-
-        if (
-            typeof data.lowestBin ===
-            "number"
-        ) {
-            FutBlack.market.lowestBin =
-                data.lowestBin;
-        }
-
-
-        if (
-            typeof data.maxBuy ===
-            "number"
-        ) {
-            FutBlack.market.maxBuy =
-                data.maxBuy;
-        }
-
-
-        if (
-            typeof data.sellPrice ===
-            "number"
-        ) {
-            FutBlack.market.sellPrice =
-                data.sellPrice;
-        }
-
-
-        if (
-            typeof data.profit ===
-            "number"
-        ) {
-            FutBlack.market.profit =
-                data.profit;
-        }
-
-
-        const lowest =
-            document.getElementById(
-                "fb-lowest-bin"
-            );
-
-        const marketLowest =
-            document.getElementById(
-                "fb-market-price"
-            );
-
-        const maxBuy =
-            document.getElementById(
-                "fb-max-buy"
-            );
-
-        const sell =
-            document.getElementById(
-                "fb-sell-price"
-            );
-
-        const profit =
-            document.getElementById(
-                "fb-profit"
-            );
-
-
-        if (lowest) {
-            lowest.textContent =
-                formatCoins(
-                    FutBlack.market.lowestBin
-                );
-        }
-
-
-        if (marketLowest) {
-            marketLowest.textContent =
-                formatCoins(
-                    FutBlack.market.lowestBin
-                );
-        }
-
-
-        if (maxBuy) {
-            maxBuy.textContent =
-                formatCoins(
-                    FutBlack.market.maxBuy
-                );
-        }
-
-
-        if (sell) {
-            sell.textContent =
-                formatCoins(
-                    FutBlack.market.sellPrice
-                );
-        }
-
-
-        if (profit) {
-            profit.textContent =
-                formatCoins(
-                    FutBlack.market.profit
-                );
-        }
-
-
-        setStatus(
-            "Market updated automatically."
-        );
-    }
-
-
-    // Make future market reader able to
-    // send data to FutBlack.
     window.FutBlack = {
-        state: FutBlack,
-        updateMarketData
+        state,
+
+        updateMarket(data) {
+            if (!data) return;
+
+            const setValue = (
+                id,
+                value
+            ) => {
+
+                const element =
+                    document.getElementById(id);
+
+                if (
+                    element &&
+                    value !== undefined &&
+                    value !== null
+                ) {
+                    element.textContent =
+                        Number(value)
+                            .toLocaleString(
+                                "en-US"
+                            );
+                }
+            };
+
+            setValue(
+                "fb-lowest-bin",
+                data.lowestBin
+            );
+
+            setValue(
+                "fb-max-buy",
+                data.maxBuy
+            );
+
+            setValue(
+                "fb-sell",
+                data.sell
+            );
+
+            setValue(
+                "fb-profit",
+                data.profit
+            );
+        }
     };
 
+    // =========================================================
+    // START
+    // =========================================================
 
-    // ============================================================
-    // INITIALISE
-    // ============================================================
-
-    function initialise() {
-
-        const nav =
-            findBottomNavigation();
-
-
-        if (!nav) {
-            return false;
-        }
-
-
-        createNavigationButton(nav);
-
-
-        console.log(
-            "[FutBlack] Loaded successfully."
-        );
-
-
-        return true;
-    }
-
-
-    // EA Web App is a dynamic application.
-    // Wait until its navigation exists.
-
-    let attempts = 0;
-
-
-    const startup =
-        setInterval(() => {
-
-            attempts++;
-
-
-            if (initialise()) {
-
-                clearInterval(startup);
-
-                return;
-
-            }
-
-
-            if (attempts >= 120) {
-
-                clearInterval(startup);
-
-                console.warn(
-                    "[FutBlack] Bottom navigation not found."
-                );
-
-            }
-
-        }, 500);
+    createButton();
 
 })();
