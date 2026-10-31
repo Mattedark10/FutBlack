@@ -1,22 +1,30 @@
-/* =========================================================
-   FUTBLACK - NAVIGATION BUTTON
-   ========================================================= */
+/* =====================================================
+   FUTBLACK LAUNCHER
+   Independent from EA navigation
+   ===================================================== */
 
-#futblack-nav-button {
-    flex: 1 1 0 !important;
+#fb-launcher {
+    position: fixed !important;
 
-    min-width: 0 !important;
-    height: 55px !important;
+    /*
+       FutBlack occupies the sixth slot.
+       It is NOT a child of EA's navigation.
+    */
+    right: 0 !important;
+    bottom: 0 !important;
+
+    width: 16.6667vw !important;
+    height: 58px !important;
 
     margin: 0 !important;
-    padding: 4px 1px !important;
+    padding: 4px 0 3px !important;
 
-    border: none !important;
-    outline: none !important;
+    border: 0 !important;
+    outline: 0 !important;
 
-    background: transparent !important;
+    background: #20262e !important;
 
-    color: #9aa3ad !important;
+    color: #9ca5af !important;
 
     display: flex !important;
     flex-direction: column !important;
@@ -25,25 +33,33 @@
 
     gap: 4px !important;
 
+    z-index: 2147483647 !important;
+
+    pointer-events: auto !important;
+
     cursor: pointer !important;
+
+    touch-action: manipulation !important;
+
+    -webkit-tap-highlight-color:
+        transparent !important;
 
     font-family:
         Arial,
         Helvetica,
         sans-serif !important;
-
-    position: relative !important;
-
-    z-index: 999999 !important;
-
-    pointer-events: auto !important;
-
-    -webkit-tap-highlight-color:
-        transparent;
 }
 
 
-#futblack-nav-button .fb-nav-icon {
+#fb-launcher.selected {
+    color: #ffffff !important;
+
+    background:
+        #151a20 !important;
+}
+
+
+.fb-launcher-icon {
     width: 25px;
     height: 19px;
 
@@ -63,60 +79,47 @@
 }
 
 
-#futblack-nav-button .fb-nav-text {
+.fb-launcher-text {
     font-size: 9px;
-    font-weight: 400;
-
     line-height: 1;
-
-    white-space: nowrap;
 }
 
 
-#futblack-nav-button.fb-selected {
-    color: #ffffff !important;
-}
+/* =====================================================
+   PAGE
+   ===================================================== */
 
-
-/* =========================================================
-   FUTBLACK PAGE
-   ========================================================= */
-
-#futblack-page {
+#fb-page {
     display: none;
 
-    position: fixed;
+    position: fixed !important;
 
-    top: 0;
-    left: 0;
-    right: 0;
+    inset:
+        0
+        0
+        58px
+        0 !important;
 
-    /*
-       Keep EA bottom navigation visible.
-    */
-    bottom: 55px;
+    z-index: 2147483646 !important;
 
-    z-index: 99990;
-
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: auto !important;
 
     box-sizing: border-box;
 
     background:
         radial-gradient(
-            circle at 100% 0%,
-            #1b2028 0%,
-            transparent 35%
+            circle at top right,
+            #1d242d,
+            transparent 36%
         ),
         linear-gradient(
             145deg,
-            #10141a 0%,
-            #090b0f 48%,
-            #050607 100%
+            #10141a,
+            #07090c 55%,
+            #040506
         );
 
-    color: #ffffff;
+    color: white;
 
     font-family:
         Arial,
@@ -128,14 +131,14 @@
 }
 
 
-#futblack-page.active {
-    display: block;
+#fb-page.open {
+    display: block !important;
 }
 
 
-/* =========================================================
+/* =====================================================
    HEADER
-   ========================================================= */
+   ===================================================== */
 
 .fb-header {
     min-height: 92px;
@@ -143,7 +146,10 @@
     box-sizing: border-box;
 
     padding:
-        max(24px, env(safe-area-inset-top))
+        max(
+            24px,
+            env(safe-area-inset-top)
+        )
         20px
         17px;
 
@@ -152,86 +158,80 @@
     justify-content: space-between;
 
     border-bottom:
-        1px solid rgba(255,255,255,.07);
+        1px solid
+        rgba(255,255,255,.07);
 }
 
 
-.fb-brand {
+.fb-logo {
     font-size: 24px;
     font-weight: 900;
 
-    letter-spacing: 1.8px;
+    letter-spacing: 1.7px;
 }
 
 
 .fb-subtitle {
     margin-top: 4px;
 
+    color: #737c87;
+
     font-size: 9px;
     font-weight: 700;
 
     letter-spacing: 1px;
-
-    color: #747c87;
 }
 
 
-.fb-ready {
+.fb-status {
     display: flex;
     align-items: center;
 
-    gap: 6px;
+    gap: 5px;
 
     margin-bottom: 2px;
 
-    font-size: 9px;
-    font-weight: 800;
+    color: #8e97a1;
 
-    color: #929aa4;
+    font-size: 8px;
+    font-weight: 800;
 }
 
 
-.fb-ready-dot {
+.fb-status > span {
     width: 6px;
     height: 6px;
 
     border-radius: 50%;
 
-    background: #ffffff;
-
-    box-shadow:
-        0 0 8px
-        rgba(255,255,255,.55);
+    background: white;
 }
 
 
-/* =========================================================
-   FUTBLACK TABS
-   ========================================================= */
+/* =====================================================
+   TABS
+   ===================================================== */
 
 .fb-tabs {
     height: 47px;
 
     display: flex;
 
-    padding: 0 13px;
+    padding: 0 12px;
 
     box-sizing: border-box;
 
     border-bottom:
-        1px solid rgba(255,255,255,.07);
+        1px solid
+        rgba(255,255,255,.07);
 
     background:
-        rgba(0,0,0,.16);
+        rgba(0,0,0,.15);
 }
 
 
 .fb-tab {
     flex: 1;
-
-    height: 47px;
-
-    padding: 0 3px;
 
     border: 0;
     border-bottom:
@@ -241,33 +241,27 @@
 
     background: transparent;
 
-    color: #69717c;
+    color: #69727c;
 
     font-size: 9px;
     font-weight: 800;
 
-    letter-spacing: .4px;
-
     cursor: pointer;
-
-    -webkit-tap-highlight-color:
-        transparent;
 }
 
 
 .fb-tab.active {
-    color: #ffffff;
+    color: white;
 
-    border-bottom-color:
-        #ffffff;
+    border-bottom-color: white;
 }
 
 
-/* =========================================================
+/* =====================================================
    CONTENT
-   ========================================================= */
+   ===================================================== */
 
-.fb-content {
+.fb-body {
     box-sizing: border-box;
 
     padding:
@@ -293,25 +287,25 @@
         4px
         10px;
 
+    color: #737c87;
+
     font-size: 9px;
     font-weight: 900;
 
-    letter-spacing: 1.2px;
-
-    color: #747c87;
+    letter-spacing: 1.1px;
 }
 
 
-/* =========================================================
+/* =====================================================
    CARDS
-   ========================================================= */
+   ===================================================== */
 
 .fb-card {
     box-sizing: border-box;
 
-    padding: 17px;
-
     margin-bottom: 12px;
+
+    padding: 17px;
 
     border:
         1px solid
@@ -323,44 +317,35 @@
         rgba(255,255,255,.04);
 
     box-shadow:
-        0 16px 35px
+        0 15px 35px
         rgba(0,0,0,.18);
 }
 
-
-.fb-secondary-card {
-    padding-top: 12px;
-    padding-bottom: 12px;
-}
-
-
-/* =========================================================
-   ACTIVE FILTER
-   ========================================================= */
 
 .fb-filter-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    margin-bottom: 19px;
+    margin-bottom: 18px;
 }
 
 
-.fb-muted {
-    margin-bottom: 5px;
+.fb-filter-header strong {
+    display: block;
 
-    color: #747c87;
+    margin-top: 4px;
+
+    font-size: 16px;
+}
+
+
+.fb-small {
+    display: block;
+
+    color: #737c87;
 
     font-size: 8px;
-    font-weight: 800;
-
-    letter-spacing: .7px;
-}
-
-
-.fb-filter-name {
-    font-size: 16px;
     font-weight: 800;
 }
 
@@ -369,13 +354,9 @@
     width: 43px;
     height: 43px;
 
-    flex-shrink: 0;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    box-sizing: border-box;
 
     border:
         1px solid
@@ -383,19 +364,16 @@
 
     border-radius: 50%;
 
-    background:
-        rgba(0,0,0,.16);
-
     font-size: 12px;
     font-weight: 900;
 }
 
 
-/* =========================================================
+/* =====================================================
    PRICE GRID
-   ========================================================= */
+   ===================================================== */
 
-.fb-price-grid {
+.fb-grid {
     display: grid;
 
     grid-template-columns:
@@ -405,9 +383,7 @@
 }
 
 
-.fb-price-item {
-    min-width: 0;
-
+.fb-price {
     padding: 12px;
 
     box-sizing: border-box;
@@ -419,7 +395,7 @@
 }
 
 
-.fb-price-item span {
+.fb-price span {
     display: block;
 
     margin-bottom: 6px;
@@ -428,35 +404,26 @@
 
     font-size: 8px;
     font-weight: 800;
-
-    letter-spacing: .5px;
 }
 
 
-.fb-price-item strong {
-    display: block;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
+.fb-price strong {
     font-size: 16px;
     font-weight: 900;
 }
 
 
-/* =========================================================
-   AUTOMATIC MARKET STATE
-   ========================================================= */
+/* =====================================================
+   AUTO MARKET STATUS
+   ===================================================== */
 
-.fb-market-state {
+.fb-auto {
     display: flex;
     align-items: center;
 
     gap: 10px;
 
     margin-top: 15px;
-
     padding-top: 14px;
 
     border-top:
@@ -465,7 +432,7 @@
 }
 
 
-.fb-loading-dot {
+.fb-pulse {
     width: 9px;
     height: 9px;
 
@@ -473,18 +440,19 @@
 
     border-radius: 50%;
 
-    background: #ffffff;
+    background: white;
 
     animation:
-        fb-pulse
-        1.5s
+        fbPulse
+        1.4s
         infinite;
 }
 
 
-@keyframes fb-pulse {
+@keyframes fbPulse {
 
-    0% {
+    0%,
+    100% {
         opacity: .25;
         transform: scale(.8);
     }
@@ -494,15 +462,10 @@
         transform: scale(1);
     }
 
-    100% {
-        opacity: .25;
-        transform: scale(.8);
-    }
-
 }
 
 
-.fb-market-state strong {
+.fb-auto strong {
     display: block;
 
     margin-bottom: 3px;
@@ -511,90 +474,83 @@
 }
 
 
-.fb-market-state span {
+.fb-auto span {
     display: block;
 
-    color: #747c87;
+    color: #737c87;
 
     font-size: 9px;
-
-    line-height: 1.35;
 }
 
 
-/* =========================================================
-   GENERAL ROW
-   ========================================================= */
+/* =====================================================
+   INFO
+   ===================================================== */
 
-.fb-row {
+.fb-info-card > div {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    padding: 7px 0;
+    padding: 6px 0;
 
     font-size: 10px;
 }
 
 
-.fb-row span {
-    color: #747c87;
+.fb-info-card span {
+    color: #737c87;
 }
 
 
-.fb-row strong {
-    font-size: 10px;
-}
+/* =====================================================
+   MARKET
+   ===================================================== */
 
-
-/* =========================================================
-   MARKET PAGE
-   ========================================================= */
-
-.fb-large-price {
+.fb-market-price {
     margin:
         8px 0
         22px;
-
-    font-size: 36px;
-    font-weight: 900;
 }
 
 
-.fb-large-price small {
+.fb-market-price strong {
+    font-size: 36px;
+}
+
+
+.fb-market-price span {
     margin-left: 4px;
 
-    color: #707985;
+    color: #737c87;
 
     font-size: 9px;
-    font-weight: 700;
 }
 
 
-/* =========================================================
+/* =====================================================
    SETTINGS
-   ========================================================= */
+   ===================================================== */
 
-.fb-label {
+.fb-card > label {
     display: block;
 
     margin:
         17px 0
         7px;
 
-    color: #838b95;
+    color: #828b95;
 
     font-size: 9px;
-    font-weight: 700;
 }
 
 
-.fb-label:first-child {
+.fb-card > label:first-child {
     margin-top: 0;
 }
 
 
-.fb-input-container {
+.fb-input-row {
     display: flex;
     align-items: center;
 
@@ -602,11 +558,10 @@
 }
 
 
-.fb-input-container input {
+.fb-input-row input {
     flex: 1;
 
     min-width: 0;
-
     height: 42px;
 
     box-sizing: border-box;
@@ -624,19 +579,13 @@
     background:
         rgba(0,0,0,.27);
 
-    color: #ffffff;
+    color: white;
 
     font-size: 13px;
 }
 
 
-.fb-input-container input:focus {
-    border-color:
-        rgba(255,255,255,.28);
-}
-
-
-.fb-input-container > span {
+.fb-input-row > span {
     width: 62px;
 
     flex-shrink: 0;
@@ -647,7 +596,7 @@
 }
 
 
-.fb-setting-divider {
+.fb-divider {
     height: 1px;
 
     margin: 22px 0 18px;
@@ -656,10 +605,6 @@
         rgba(255,255,255,.07);
 }
 
-
-/* =========================================================
-   PAUSE TOGGLE
-   ========================================================= */
 
 .fb-toggle-row {
     display: flex;
@@ -680,11 +625,13 @@
 
     margin-top: 3px;
 
-    color: #737b85;
+    color: #737c87;
 
     font-size: 8px;
 }
 
+
+/* SWITCH */
 
 .fb-switch {
     position: relative;
@@ -711,8 +658,6 @@
     background: #30353c;
 
     cursor: pointer;
-
-    transition: .2s;
 }
 
 
@@ -729,14 +674,14 @@
 
     border-radius: 50%;
 
-    background: #ffffff;
+    background: white;
 
     transition: .2s;
 }
 
 
 .fb-switch input:checked + span {
-    background: #686f79;
+    background: #69717b;
 }
 
 
@@ -746,42 +691,34 @@
 }
 
 
-#fb-pause-settings {
+#fb-pause-options {
     margin-top: 8px;
 }
 
 
-/* =========================================================
-   LARGER SCREENS
-   ========================================================= */
+/* =====================================================
+   DESKTOP
+   ===================================================== */
 
 @media (min-width: 700px) {
 
-    .fb-content {
+    #fb-launcher {
+        width: 90px !important;
+    }
+
+
+    .fb-body {
         max-width: 850px;
 
-        margin-left: auto;
-        margin-right: auto;
+        margin: auto;
 
         padding-top: 30px;
     }
 
 
-    .fb-header {
-        padding-left: 35px;
-        padding-right: 35px;
-    }
-
-
-    .fb-tabs {
-        padding-left: 30px;
-        padding-right: 30px;
-    }
-
-
-    .fb-price-grid {
+    .fb-grid {
         grid-template-columns:
             repeat(4, minmax(0, 1fr));
     }
 
-   }
+}
